@@ -19,6 +19,7 @@ import mock_funcs as mf
 
 
 COMMAND_PAGES = [
+    # (slug, function)
     ('new-artists', mf.new_artists),
     ('update-artist-whitelist', mf.update_artist_whitelist),
     ('check-music', mf.check_music),
@@ -35,13 +36,13 @@ app = None
 
 def main():
     global app
-    handlers = [
-        (r'/', IndexHandler),
-        # (r'/start/', StartHandler),
-        # (r'/stop/', StopHandler),
-        # (r'/messages/', MessageHandler),
-        (r'(.*)', NoCacheStaticFileHandler),
-    ]
+    handlers = [(r'/', IndexHandler)]
+    for slug, func in COMMAND_PAGES:
+        handlers.append(
+            (r'/%s/' % slug, CommandPageHandler, {'slug': slug}))
+    handlers.append(
+        (r'/(.*)', NoCacheStaticFileHandler, {'path': str(site_path)}))
+
     settings = dict(debug=True)
     app = Application(handlers, **settings)
     app.sockets = collections.defaultdict(set)
@@ -58,8 +59,16 @@ def main():
 
 class IndexHandler(RequestHandler):
     def get(self):
-        # self.set_header('Content-Type', 'text/html')
         self.write(render('index.plim', task=app.current_task))
+
+
+class CommandPageHandler(RequestHandler):
+    def initialize(self, slug):
+        self.slug = slug
+
+    def get(self):
+        template_name = self.slug + '.plim'
+        self.write(render(template_name))
 
 
 class StartHandler(RequestHandler):
@@ -92,10 +101,6 @@ class MessageHandler(WebSocketHandler):
 
 
 class NoCacheStaticFileHandler(StaticFileHandler):
-    def __init__(self, *args, **kwargs):
-        kwargs['path'] = str(Path('site').absolute())
-        super(NoCacheStaticFileHandler, self).__init__(*args, **kwargs)
-
     def set_extra_headers(self, path):
         self.set_header('Cache-Control', 'no-store')
 

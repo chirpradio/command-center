@@ -1,0 +1,25 @@
+-inherit base.plim
+
+-block extrahead
+  link rel='stylesheet' href='/styles/command.css'
+
+header
+  ol.breadcrumb
+    li
+      a href='/' Home
+    li.active = self.page_title()
+
+  h1 = self.page_title()
+
+  -block desc
+
+  .hbox
+    button.btn.btn-primary.start Start
+    button.btn.btn-primary.stop Stop
+    div.spacer
+    -block next
+      a.btn.btn-primary.disabled.next href='#' Next
+
+main.console
+    p Sample text
+    p Line 2
