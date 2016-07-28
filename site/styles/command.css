@@ -47,3 +47,18 @@ header button.start, header button.stop {
   padding: 0em 1em;
   margin-bottom: 0.2em;
 }
+
+.console p.error {
+  background-color: crimson;
+  color: white;
+}
+
+.console p.highlight {
+  background-color: gold;
+  color: darkslategray;
+}
+
+.console p.success {
+  background-color: seagreen;
+  color: white;
+}

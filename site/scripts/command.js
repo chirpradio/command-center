@@ -14,7 +14,10 @@ ws.onclose = () => {
 
 ws.onmessage = (evt) => {
   let obj = JSON.parse(evt.data)
-  plog(obj.value)
+  plog(obj.value, obj.type)
+  if (obj.type == 'success') {
+    speak(obj.value)
+  }
 }
 
 $('button.start').on('click', () => {
@@ -47,7 +50,7 @@ function speak(text) {
   }
 
   return new Promise(function(resolve, reject) {
-    utterance = new SpeechSynthesisUtterance(text)
+    let utterance = new SpeechSynthesisUtterance(text)
     window.speechSynthesis.speak(utterance)
     utterance.onend = resolve
   })

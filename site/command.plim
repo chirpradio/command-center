@@ -32,5 +32,3 @@ header
       a.btn.btn-primary.disabled.next href='#' Next
 
 main.console
-    p Sample text
-    p Line 2

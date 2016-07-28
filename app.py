@@ -62,30 +62,30 @@ class CommandCenterApplication(Application):
         self.current_task = None
         self.loop = IOLoop.current()
 
-        def write_message(self, slug, message=None, **kwargs):
-            """
-            It is safe to call this method from outside the main thread that is
-            running the Tornado event loop.
+    def write_message(self, slug, message=None, **kwargs):
+        """
+        It is safe to call this method from outside the main thread that is
+        running the Tornado event loop.
 
-            """
-            if not len(kwargs):
-                obj = dict(type='info', value=message)
-            else:
-                obj = kwargs
-                if message is not None:
-                    kwargs['value'] = message
+        """
+        if not len(kwargs):
+            obj = dict(type='info', value=message)
+        else:
+            obj = kwargs
+            if message is not None:
+                kwargs['value'] = message
 
-            data = json.dumps(obj)
-            self.loop.add_callback(self._write_message, slug, data)
+        data = json.dumps(obj)
+        self.loop.add_callback(self._write_message, slug, data)
 
-        def _write_message(self, slug, data):
-            """
-            Write the given data to all connected websockets for a particular
-            slug.
+    def _write_message(self, slug, data):
+        """
+        Write the given data to all connected websockets for a particular
+        slug.
 
-            """
-            for socket in self.sockets[slug]:
-                socket.write_message(data)
+        """
+        for socket in self.sockets[slug]:
+            socket.write_message(data)
 
 
 class IndexHandler(RequestHandler):
@@ -115,8 +115,11 @@ class StartCommandHandler(RequestHandler):
             self.write('fail: command is still running')
             return
 
-        task_func = get_task_func(self.func)
+        task_func = get_task_func(self.slug, self.func)
         task = CommandTask(self.slug, task_func)
+        def on_done():
+            app.current_task = None
+        task.add_done_callback(on_done)
         task.start()
         app.current_task = task
         self.write('ok')
@@ -198,9 +201,7 @@ class CommandTask(object):
 
 def render(template_name, **kwargs):
     path = site_path / template_name
-    # import ipdb; ipdb.set_trace()
     tmpl = Template(
-        # filename=str(path),
         text=path.read_text(),
         lookup=template_lookup,
         preprocessor=plim.preprocessor)
@@ -208,9 +209,11 @@ def render(template_name, **kwargs):
 
 
 def get_task_func(slug, func):
-    from .printing import cprint
+    from printing import cprint
 
-    write_func = functools.partial(app.write_message, slug)
+    def write_func(message, **kwargs):
+        app.write_message(slug, message, **kwargs)
+        print(message)
 
     def new_func():
         with cprint.use_write_function(write_func):
