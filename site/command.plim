@@ -6,8 +6,12 @@
 -block extrascripts
   script src='/scripts/command.js'
 
--def button(cls, label)
-  button.btn.btn-primary.disabled class=cls = label
+-def button(cls, label, enabled=False)
+  ---
+    classes = [cls]
+    if not enabled:
+        classes.append('disabled')
+  button.btn.btn-primary class=${' '.join(classes)} = label
 
 header
   ol.breadcrumb
@@ -20,8 +24,8 @@ header
   -block desc
 
   .hbox
-    = button('start', 'Start')
-    = button('stop', 'Stop')
+    = button('start', 'Start', not task_is_running)
+    = button('stop', 'Stop', task_is_running)
     = button('errors', 'Show errors')
     div.spacer
     -block next

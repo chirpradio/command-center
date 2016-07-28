@@ -1,5 +1,3 @@
-import random
-import time
 import functools
 import threading
 import json
@@ -15,16 +13,17 @@ from tornado.web import Application, RequestHandler, StaticFileHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 
-import mock_funcs as mf
+import mock_commands as commands
+# import commands
 
 
 COMMAND_PAGES = [
     # (slug, function)
-    ('new-artists', mf.new_artists),
-    ('update-artist-whitelist', mf.update_artist_whitelist),
-    ('check-music', mf.check_music),
-    ('generate-traktor', mf.generate_traktor),
-    ('upload', mf.upload),
+    ('new-artists', commands.new_artists),
+    ('update-artist-whitelist', commands.update_artist_whitelist),
+    ('check-music', commands.check_music),
+    ('generate-traktor', commands.generate_traktor),
+    ('upload', commands.upload),
 ]
 
 site_path = Path(__file__).parent.absolute() / 'site'
@@ -42,7 +41,8 @@ def main():
         handlers.extend([
             (r'/%s/' % slug, CommandPageHandler, {'slug': slug}),
             (r'/%s/start/' % slug, StartCommandHandler, {'slug': slug, 'func': func}),
-            (r'/%s/stop' % slug, StopCommandHandler, {'slug': slug}),
+            (r'/%s/stop/' % slug, StopCommandHandler, {'slug': slug}),
+            (r'/%s/messages/' % slug, MessageHandler, {'slug': slug}),
         ])
     handlers.append(
         (r'/(.*)', NoCacheStaticFileHandler, {'path': str(site_path)}))
@@ -99,7 +99,10 @@ class CommandPageHandler(RequestHandler):
 
     def get(self):
         template_name = self.slug + '.plim'
-        self.write(render(template_name))
+
+        task = app.current_task
+        task_is_running = task is not None and task.slug == self.slug
+        self.write(render(template_name, task_is_running=task_is_running))
 
 
 class StartCommandHandler(RequestHandler):
@@ -112,7 +115,8 @@ class StartCommandHandler(RequestHandler):
             self.write('fail: command is still running')
             return
 
-        task = CommandTask(self.slug, self.func)
+        task_func = get_task_func(self.func)
+        task = CommandTask(self.slug, task_func)
         task.start()
         app.current_task = task
         self.write('ok')
@@ -201,6 +205,19 @@ def render(template_name, **kwargs):
         lookup=template_lookup,
         preprocessor=plim.preprocessor)
     return tmpl.render(**kwargs)
+
+
+def get_task_func(slug, func):
+    from .printing import cprint
+
+    write_func = functools.partial(app.write_message, slug)
+
+    def new_func():
+        with cprint.use_write_function(write_func):
+            for obj in func():
+                yield obj
+
+    return new_func
 
 
 if __name__ == '__main__':
