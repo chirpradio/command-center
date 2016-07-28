@@ -13,24 +13,53 @@ ws.onclose = () => {
 }
 
 ws.onmessage = (evt) => {
+  // console.log(evt.data)
   let obj = JSON.parse(evt.data)
-  plog(obj.value, obj.type)
-  if (obj.type == 'success') {
-    speak(obj.value)
+  if (obj.value) {
+    plog(obj.value, obj.type)
+  }
+
+  switch (obj.type) {
+    case 'success':
+      speak(obj.value)
+      break
+    case 'stop':
+    case 'finish':
+      enableButton('button.start', true)
+      enableButton('button.stop', false)
+      if (obj.type === 'stop') {
+        plog('Command was stopped by user', 'highlight')
+      }
+    default:
+      break
   }
 }
 
 $('button.start').on('click', () => {
   $.get('start/', (data) => {
-    console.log(data)
+    if (data === 'ok') {
+      enableButton('button.start', false)
+      enableButton('button.stop', true)
+    }
   })
 })
 
 $('button.stop').on('click', () => {
-  $.get('stop/', (data) => {
-    console.log(data)
-  })
+  $.get('stop/')
+  plog('Stopping command...')
 })
+
+
+function enableButton(selector, enabled) {
+  let btn = $(selector)
+  if (enabled) {
+    btn.removeClass('disabled')
+    btn[0].enabled = true
+  } else {
+    btn.addClass('disabled')
+    btn[0].enabled = false
+  }
+}
 
 
 function plog(text, cls) {

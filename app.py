@@ -120,8 +120,9 @@ class StartCommandHandler(RequestHandler):
         task.start()
         app.current_task = task
 
-        def on_done(future):
+        def on_done(finished):
             app.current_task = None
+            app.write_message(self.slug, type='finish' if finished else 'stop')
         task.add_done_callback(on_done)
 
         self.write('ok')
@@ -142,6 +143,7 @@ class StopCommandHandler(RequestHandler):
 
         task.stop()
         app.current_task = None
+        self.write('ok')
 
 
 class MessageHandler(WebSocketHandler):
@@ -166,8 +168,11 @@ class CommandTask(object):
         self.func = func
         self.stop_event = threading.Event()
         self.future = None
+        self.done_callbacks = []
+        self.finished = None
 
     def stop(self):
+        self.finished = False
         self.stop_event.set()
 
     def done(self):
@@ -180,15 +185,19 @@ class CommandTask(object):
 
         """
         self.future = executor.submit(self._stoppable_run)
-        self.add_done_callback(self._done_callback)
+        self.future.add_done_callback(self._done_callback)
 
     def add_done_callback(self, callback):
-        self.future.add_done_callback(callback)
+        self.done_callbacks.append(callback)
 
     def _stoppable_run(self):
         for obj in self.func():
             if self.stop_event.is_set():
-                break
+                self.finished = False
+                self.stop_event.set()
+                return
+
+        self.finished = True
         self.stop_event.set()
 
     def _done_callback(self, future):
@@ -198,6 +207,9 @@ class CommandTask(object):
             future.result()
         except Exception as ex:
             self.log('Error: %s' % ex)
+        finally:
+            for cb in self.done_callbacks:
+                cb(self.finished)
 
 
 def render(template_name, **kwargs):
