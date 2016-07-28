@@ -117,11 +117,13 @@ class StartCommandHandler(RequestHandler):
 
         task_func = get_task_func(self.slug, self.func)
         task = CommandTask(self.slug, task_func)
-        def on_done():
-            app.current_task = None
-        task.add_done_callback(on_done)
         task.start()
         app.current_task = task
+
+        def on_done(future):
+            app.current_task = None
+        task.add_done_callback(on_done)
+
         self.write('ok')
 
 
@@ -181,8 +183,7 @@ class CommandTask(object):
         self.add_done_callback(self._done_callback)
 
     def add_done_callback(self, callback):
-        if self.future:
-            self.future.add_done_callback(callback)
+        self.future.add_done_callback(callback)
 
     def _stoppable_run(self):
         for obj in self.func():
@@ -213,7 +214,7 @@ def get_task_func(slug, func):
 
     def write_func(message, **kwargs):
         app.write_message(slug, message, **kwargs)
-        print(message)
+        # print(message)
 
     def new_func():
         with cprint.use_write_function(write_func):
