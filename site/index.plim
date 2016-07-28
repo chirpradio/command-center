@@ -5,6 +5,11 @@
 
 h1 CHIRP Command Center
 
+-if task is not None
+  p
+    Currently running command:&nbsp;
+    a href=${task.slug + '/'} ${task.slug}
+
 p Welcome! What would you like to do?
 
 -def button(label, url)
