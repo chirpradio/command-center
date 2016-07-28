@@ -27,7 +27,7 @@ header {
   padding-bottom: 1em;
 }
 
-header button.start {
+header button.start, header button.stop {
     margin-right: 1em;
 }
 

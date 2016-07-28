@@ -36,25 +36,56 @@ app = None
 
 def main():
     global app
+
     handlers = [(r'/', IndexHandler)]
     for slug, func in COMMAND_PAGES:
-        handlers.append(
-            (r'/%s/' % slug, CommandPageHandler, {'slug': slug}))
+        handlers.extend([
+            (r'/%s/' % slug, CommandPageHandler, {'slug': slug}),
+            (r'/%s/start/' % slug, StartCommandHandler, {'slug': slug, 'func': func}),
+            (r'/%s/stop' % slug, StopCommandHandler, {'slug': slug}),
+        ])
     handlers.append(
         (r'/(.*)', NoCacheStaticFileHandler, {'path': str(site_path)}))
 
     settings = dict(debug=True)
-    app = Application(handlers, **settings)
-    app.sockets = collections.defaultdict(set)
-    app.current_task = None
+    app = CommandCenterApplication(handlers, **settings)
     app.listen(8000)
     loop = IOLoop.current()
-
-    # Let the send() callable know about the loop and the sockets.
-    # send.loop = loop
-    # send.sockets = app.sockets
-
     loop.start()
+
+
+class CommandCenterApplication(Application):
+    def __init__(self, *args, **kwargs):
+        super(CommandCenterApplication, self).__init__(*args, **kwargs)
+
+        self.sockets = collections.defaultdict(set)
+        self.current_task = None
+        self.loop = IOLoop.current()
+
+        def write_message(self, slug, message=None, **kwargs):
+            """
+            It is safe to call this method from outside the main thread that is
+            running the Tornado event loop.
+
+            """
+            if not len(kwargs):
+                obj = dict(type='info', value=message)
+            else:
+                obj = kwargs
+                if message is not None:
+                    kwargs['value'] = message
+
+            data = json.dumps(obj)
+            self.loop.add_callback(self._write_message, slug, data)
+
+        def _write_message(self, slug, data):
+            """
+            Write the given data to all connected websockets for a particular
+            slug.
+
+            """
+            for socket in self.sockets[slug]:
+                socket.write_message(data)
 
 
 class IndexHandler(RequestHandler):
@@ -71,22 +102,37 @@ class CommandPageHandler(RequestHandler):
         self.write(render(template_name))
 
 
-class StartHandler(RequestHandler):
+class StartCommandHandler(RequestHandler):
     def initialize(self, slug, func):
         self.slug = slug
         self.func = func
 
     def get(self):
-        pass
+        if app.current_task is not None:
+            self.write('fail: command is still running')
+            return
+
+        task = CommandTask(self.slug, self.func)
+        task.start()
+        app.current_task = task
+        self.write('ok')
 
 
-class StopHandler(RequestHandler):
+class StopCommandHandler(RequestHandler):
+    def initialize(self, slug):
+        self.slug = slug
+
     def get(self):
-        app = self.application
-        if app.current_task:
-            app.current_task.cancel()
-            self.write('Stopping background task...')
-            app.logger.info('Stopping background task...')
+        task = app.current_task
+        if task is None:
+            self.write('fail: no command is running')
+            return
+        if task.slug != self.slug:
+            self.write('fail: cannot stop other command')
+            return
+
+        task.stop()
+        app.current_task = None
 
 
 class MessageHandler(WebSocketHandler):
@@ -94,10 +140,10 @@ class MessageHandler(WebSocketHandler):
         self.slug = slug
 
     def open(self):
-        self.application.sockets[self.slug].add(self)
+        app.sockets[self.slug].add(self)
 
     def on_close(self):
-        self.application.sockets[self.slug].remove(self)
+        app.sockets[self.slug].remove(self)
 
 
 class NoCacheStaticFileHandler(StaticFileHandler):
@@ -112,7 +158,7 @@ class CommandTask(object):
         self.stop_event = threading.Event()
         self.future = None
 
-    def cancel(self):
+    def stop(self):
         self.stop_event.set()
 
     def done(self):
@@ -145,40 +191,6 @@ class CommandTask(object):
         except Exception as ex:
             self.log('Error: %s' % ex)
 
-
-
-class SendCallable:
-    """
-    A callable object that is used to communicate with the browser.
-    """
-
-    def __init__(self):
-        self.loop = None
-        self.sockets = None
-
-    def __call__(self, obj=None, **kwargs):
-        """
-        It is safe to call this method from outside the main thread that is
-        running the Tornado event loop.
-        """
-        if not self.loop:
-            return
-        if obj is not None:
-            data = json.dumps(obj)
-            if kwargs:
-                print('Warning: Keyword arguments to send() are ignored when '
-                      'single positional argument is given')
-        else:
-            data = json.dumps(kwargs)
-        self.loop.add_callback(self._send, data)
-
-    def _send(self, data):
-        "Write the given data to all connected websockets."
-        for socket in self.sockets:
-            socket.write_message(data)
-
-
-send = SendCallable()
 
 def render(template_name, **kwargs):
     path = site_path / template_name

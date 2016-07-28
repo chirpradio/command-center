@@ -3,6 +3,12 @@
 -block extrahead
   link rel='stylesheet' href='/styles/command.css'
 
+-block extrascripts
+  script src='/scripts/command.js'
+
+-def button(cls, label)
+  button.btn.btn-primary.disabled class=cls = label
+
 header
   ol.breadcrumb
     li
@@ -14,8 +20,9 @@ header
   -block desc
 
   .hbox
-    button.btn.btn-primary.start Start
-    button.btn.btn-primary.stop Stop
+    = button('start', 'Start')
+    = button('stop', 'Stop')
+    = button('errors', 'Show errors')
     div.spacer
     -block next
       a.btn.btn-primary.disabled.next href='#' Next
