@@ -13,6 +13,9 @@
         classes.append('disabled')
   button.btn.btn-primary disabled=${not enabled}? class=${' '.join(classes)} = label
 
+-def name='next_url()' filter='trim'
+  |#
+
 header
   ol.breadcrumb
     li
@@ -30,8 +33,7 @@ header
 data-target='#error-modal' disabled='disabled') Show errors
 
     div.spacer
-    -block next
-      a.btn.btn-primary.disabled.next href='#' Next
+    button.btn.btn-primary.disabled.next disabled='disabled' data-url=${self.next_url()} Next
 
 main.console
 

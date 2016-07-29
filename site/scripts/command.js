@@ -22,11 +22,13 @@ ws.onmessage = (evt) => {
   switch (obj.type) {
     case 'success':
       speak(obj.value)
+      enableButton('button.next', true)
       break
     case 'error':
       speak(obj.value)
       enableButton('button.show-errors', true)
       $('.modal-body pre').text(obj.stacktrace)
+      break
     case 'stop':
     case 'finish':
       enableButton('button.start', true)
@@ -34,6 +36,7 @@ ws.onmessage = (evt) => {
       if (obj.type === 'stop') {
         plog('Command was stopped by user', 'highlight')
       }
+      break
     default:
       break
   }
@@ -51,6 +54,11 @@ $('button.start').on('click', () => {
 $('button.stop').on('click', () => {
   $.get('stop/')
   plog('Stopping command...')
+})
+
+
+$('button.next').on('click', function(evt) {
+  document.location = $(this).data('url')
 })
 
 
