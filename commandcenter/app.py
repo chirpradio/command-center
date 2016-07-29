@@ -13,8 +13,8 @@ from tornado.web import Application, RequestHandler, StaticFileHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 
-from . import mock_commands as commands
-# import commands
+# from . import mock_commands as commands
+from . import commands
 
 
 COMMAND_PAGES = [
@@ -237,7 +237,7 @@ def render(template_name, **kwargs):
 
 
 def get_task_func(slug, func):
-    from printing import cprint
+    from chirp.common.printing import cprint
 
     def write_func(message, **kwargs):
         app.write_message(slug, message, **kwargs)
