@@ -11,7 +11,7 @@
     classes = [cls]
     if not enabled:
         classes.append('disabled')
-  button.btn.btn-primary class=${' '.join(classes)} = label
+  button.btn.btn-primary disabled=${not enabled}? class=${' '.join(classes)} = label
 
 header
   ol.breadcrumb
@@ -26,9 +26,23 @@ header
   .hbox
     = button('start', 'Start', not task_is_running)
     = button('stop', 'Stop', task_is_running)
-    = button('errors', 'Show errors')
+    button.btn.btn-primary.disabled.show-errors(data-toggle='modal'
+data-target='#error-modal' disabled='disabled') Show errors
+
     div.spacer
     -block next
       a.btn.btn-primary.disabled.next href='#' Next
 
 main.console
+
+
+#error-modal.modal class='fade'
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close data-dismiss='modal' &times;
+        h4.modal-title Errors
+      .modal-body
+        pre
+      .modal-footer
+        button.btn.btn-default data-dismiss='modal' Close

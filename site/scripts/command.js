@@ -25,6 +25,8 @@ ws.onmessage = (evt) => {
       break
     case 'error':
       plog(obj.message, 'error')
+      enableButton('button.show-errors', true)
+      $('.modal-body pre').text(obj.stacktrace)
     case 'stop':
     case 'finish':
       enableButton('button.start', true)
@@ -56,10 +58,10 @@ function enableButton(selector, enabled) {
   let btn = $(selector)
   if (enabled) {
     btn.removeClass('disabled')
-    btn[0].enabled = true
+    btn[0].disabled = false
   } else {
     btn.addClass('disabled')
-    btn[0].enabled = false
+    btn[0].disabled = true
   }
 }
 

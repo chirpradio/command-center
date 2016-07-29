@@ -212,8 +212,11 @@ class CommandTask(object):
         self.stop_event.set()
 
     def _done_callback(self, future):
-        # If there was an exception inside of self._stoppable_run, then it won't
-        # be raised until you call future.result().
+        """
+        If there was an exception inside of self._stoppable_run, then it won't
+        be raised until you call future.result().
+
+        """
         try:
             future.result()
             for cb in self.done_callbacks:
