@@ -4,6 +4,8 @@
   link rel='stylesheet' href='/styles/command.css'
 
 -block extrascripts
+  script src='/scripts/jsfx.js'
+  script src='/scripts/soundfx.js'
   script src='/scripts/command.js'
 
 -def button(cls, label, enabled=False)

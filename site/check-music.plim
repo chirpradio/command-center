@@ -5,3 +5,6 @@
 
 -block desc
   p This command will check new music files for errors.
+
+-def name='next_url()' filter='trim'
+  |../generate-traktor/

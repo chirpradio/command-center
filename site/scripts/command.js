@@ -21,11 +21,11 @@ ws.onmessage = (evt) => {
 
   switch (obj.type) {
     case 'success':
-      speak(obj.value)
+      announce('success', obj.value)
       enableButton('button.next', true)
       break
     case 'error':
-      speak(obj.value)
+      announce('failure', obj.value)
       enableButton('button.show-errors', true)
       $('.modal-body pre').text(obj.stacktrace)
       break
@@ -90,9 +90,24 @@ function speak(text) {
     return Promise.resolve()
   }
 
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     let utterance = new SpeechSynthesisUtterance(text)
     window.speechSynthesis.speak(utterance)
     utterance.onend = resolve
   })
+}
+
+
+let sfx = jsfx.Sounds(window.soundEffectsLibrary)
+
+function playSound(name) {
+  return new Promise((resolve, reject) => {
+    sfx[name]()
+    window.setTimeout(resolve, 1000)
+  })
+}
+
+
+function announce(sound, text) {
+  playSound(sound).then(() => speak(text))
 }
