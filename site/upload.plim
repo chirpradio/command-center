@@ -6,3 +6,6 @@
 -block desc
   -md
     This command will upload track metadata to [DJDB](https://chirpradio.appspot.com/).
+
+-def name='next_url()' filter='trim'
+  |../new-artists/

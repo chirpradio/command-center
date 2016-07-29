@@ -5,3 +5,6 @@
 
 -block desc
   p This command will generate the NML file for Traktor.
+
+-def name='next_url()' filter='trim'
+  |../upload/
