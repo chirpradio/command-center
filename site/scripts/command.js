@@ -23,6 +23,8 @@ ws.onmessage = (evt) => {
     case 'success':
       speak(obj.value)
       break
+    case 'error':
+      plog(obj.message, 'error')
     case 'stop':
     case 'finish':
       enableButton('button.start', true)

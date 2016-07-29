@@ -7,6 +7,8 @@ def new_artists():
     for i in range(1, 31):
         cprint('Artist #%d' % i)
         time.sleep(0.2)
+        if i == 11:
+            raise Exception('Oh no random unexpected error!')
         yield
 
     cprint('Found 30 new artists!', type='success')

@@ -125,6 +125,13 @@ class StartCommandHandler(RequestHandler):
             app.write_message(self.slug, type='finish' if finished else 'stop')
         task.add_done_callback(on_done)
 
+        def on_error(ex):
+            import traceback
+            app.current_task = None
+            app.write_message(
+                self.slug, type='error', message=str(ex), stacktrace=traceback.format_exc())
+        task.add_error_callback(on_error)
+
         self.write('ok')
 
 
@@ -169,6 +176,7 @@ class CommandTask(object):
         self.stop_event = threading.Event()
         self.future = None
         self.done_callbacks = []
+        self.error_callbacks = []
         self.finished = None
 
     def stop(self):
@@ -190,6 +198,9 @@ class CommandTask(object):
     def add_done_callback(self, callback):
         self.done_callbacks.append(callback)
 
+    def add_error_callback(self, callback):
+        self.error_callbacks.append(callback)
+
     def _stoppable_run(self):
         for obj in self.func():
             if self.stop_event.is_set():
@@ -205,11 +216,11 @@ class CommandTask(object):
         # be raised until you call future.result().
         try:
             future.result()
-        except Exception as ex:
-            self.log('Error: %s' % ex)
-        finally:
             for cb in self.done_callbacks:
                 cb(self.finished)
+        except Exception as ex:
+            for cb in self.error_callbacks:
+                cb(ex)
 
 
 def render(template_name, **kwargs):
