@@ -76,7 +76,9 @@ function enableButton(selector, enabled) {
 
 function plog(text, cls) {
   let output = $('.console')
-  let p = $('<p>').text(text).appendTo(output)
+  let p = $('<p>').text(text)  
+  p.html(p.html().replace(/\n/g, '<br>'))
+  p.appendTo(output)
   if (cls) {
     p.addClass(cls)
   }
