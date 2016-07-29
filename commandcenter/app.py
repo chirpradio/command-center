@@ -13,7 +13,7 @@ from tornado.web import Application, RequestHandler, StaticFileHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 
-import mock_commands as commands
+from . import mock_commands as commands
 # import commands
 
 
@@ -26,14 +26,14 @@ COMMAND_PAGES = [
     ('upload', commands.upload),
 ]
 
-site_path = Path(__file__).parent.absolute() / 'site'
+site_path = Path(__file__).parent.parent.absolute() / 'site'
 template_lookup = TemplateLookup(
     directories=[str(site_path)], preprocessor=plim.preprocessor)
 executor = ThreadPoolExecutor(1)
 app = None
 
 
-def main():
+def serve():
     global app
 
     handlers = [(r'/', IndexHandler)]
@@ -50,6 +50,7 @@ def main():
     settings = dict(debug=True)
     app = CommandCenterApplication(handlers, **settings)
     app.listen(8000)
+    print('Serving on http://localhost:8000')
     loop = IOLoop.current()
     loop.start()
 
