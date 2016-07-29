@@ -24,7 +24,7 @@ ws.onmessage = (evt) => {
       speak(obj.value)
       break
     case 'error':
-      plog(obj.message, 'error')
+      speak(obj.value)
       enableButton('button.show-errors', true)
       $('.modal-body pre').text(obj.stacktrace)
     case 'stop':
