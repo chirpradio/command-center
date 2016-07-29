@@ -1,0 +1,7 @@
+-inherit command.plim
+
+-block page_title
+  Check new music files
+
+-block desc
+  p This command will check new music files for errors.

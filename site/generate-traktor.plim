@@ -1,0 +1,7 @@
+-inherit command.plim
+
+-block page_title
+  Generate Traktor file
+
+-block desc
+  p This command will generate the NML file for Traktor.

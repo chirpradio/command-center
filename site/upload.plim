@@ -1,0 +1,8 @@
+-inherit command.plim
+
+-block page_title
+  Upload new data to DJDB
+
+-block desc
+  -md
+    This command will upload track metadata to [DJDB](https://chirpradio.appspot.com/).
