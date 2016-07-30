@@ -7,18 +7,16 @@ from chirp.common.printing import cprint
 
 def new_artists():
     from chirp.library.do_dump_new_artists_in_dropbox import main_generator
-    for _ in main_generator():
+    for _ in main_generator(rewrite=False):
         yield
 
 
 def update_artist_whitelist():
     from chirp.library import artists
     from chirp.library.do_dump_new_artists_in_dropbox import main_generator
-    sys.argv = ['--rewrite']
-    for _ in main_generator():
+    for _ in main_generator(rewrite=True):
         yield
-    sys.argv = None
-
+    
     cwd = op.dirname(artists._WHITELIST_FILE)
 
     # Show changes to the artist whitelist file
