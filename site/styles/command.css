@@ -48,7 +48,7 @@ header button.start, header button.stop {
   margin-bottom: 0.2em;
 }
 
-.console p.error {
+.console p.error, .console p.failure {
   background-color: crimson;
   color: white;
 }

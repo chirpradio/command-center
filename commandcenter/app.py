@@ -130,7 +130,7 @@ class StartCommandHandler(RequestHandler):
             import traceback
             app.current_task = None
             app.write_message(
-                self.slug, str(ex), type='error', stacktrace=traceback.format_exc())
+                self.slug, str(ex), type='failure', stacktrace=traceback.format_exc())
         task.add_error_callback(on_error)
 
         self.write('ok')

@@ -20,14 +20,17 @@ ws.onmessage = (evt) => {
   }
 
   switch (obj.type) {
+    case 'error':
+      playSound('error')
+      break
     case 'success':
       announce('success', obj.value)
       enableButton('button.next', true)
       break
-    case 'error':
+    case 'failure':
       announce('failure', obj.value)
       enableButton('button.show-errors', true)
-      $('.modal-body pre').text(obj.stacktrace)
+      $('.modal-body pre').text(obj.stacktrace || obj.value)
       break
     case 'stop':
     case 'finish':
@@ -76,7 +79,7 @@ function enableButton(selector, enabled) {
 
 function plog(text, cls) {
   let output = $('.console')
-  let p = $('<p>').text(text)  
+  let p = $('<p>').text(text)
   p.html(p.html().replace(/\n/g, '<br>'))
   p.appendTo(output)
   if (cls) {
