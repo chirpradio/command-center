@@ -6,19 +6,21 @@ from chirp.common.printing import cprint
 
 
 def new_artists():
-    from chirp.library.do_dump_new_artists_in_dropbox import main
-    for _ in main(): yield
+    from chirp.library.do_dump_new_artists_in_dropbox import main_generator
+    for _ in main_generator():
+        yield
 
 
 def update_artist_whitelist():
     from chirp.library import artists
-    from chirp.library.do_dump_new_artists_in_dropbox import main
+    from chirp.library.do_dump_new_artists_in_dropbox import main_generator
     sys.argv = ['--rewrite']
-    for _ in main(): yield
+    for _ in main_generator():
+        yield
     sys.argv = None
 
     cwd = op.dirname(artists._WHITELIST_FILE)
-    
+
     # Show changes to the artist whitelist file
     cmd = ['git', 'diff', artists._WHITELIST_FILE]
     exec_and_print(cmd, cwd)
@@ -28,6 +30,8 @@ def update_artist_whitelist():
     exec_and_print(cmd, cwd)
     # cmd = ['git', 'push']
     # exec_and_print(cmd, cwd)
+
+    cprint('Changes to artist whitelist pushed to git', type='success')
 
 
 def check_music():
