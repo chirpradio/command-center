@@ -22,6 +22,7 @@ COMMAND_PAGES = [
     ('new-artists', commands.new_artists),
     ('update-artist-whitelist', commands.update_artist_whitelist),
     ('check-music', commands.check_music),
+    ('import-music', commands.import_music),
     ('generate-traktor', commands.generate_traktor),
     ('upload', commands.upload),
 ]

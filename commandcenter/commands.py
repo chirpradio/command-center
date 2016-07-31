@@ -16,7 +16,7 @@ def update_artist_whitelist():
     from chirp.library.do_dump_new_artists_in_dropbox import main_generator
     for _ in main_generator(rewrite=True):
         yield
-    
+
     cwd = op.dirname(artists._WHITELIST_FILE)
 
     # Show changes to the artist whitelist file
@@ -33,7 +33,16 @@ def update_artist_whitelist():
 
 
 def check_music():
-    for _ in fake_command(): yield
+    from chirp.library.do_periodic_import import import_albums
+    for _ in import_albums(dry_run=True):
+        yield
+
+
+def import_music():
+    from chirp.library.do_periodic_import import import_albums
+    for _ in import_albums(dry_run=False):
+        yield
+    cprint('Finished!', type='success')
 
 
 def generate_traktor():
