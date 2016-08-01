@@ -2,6 +2,7 @@ import sys
 import subprocess
 import os.path as op
 import time
+import datetime
 
 from chirp.common.printing import cprint
 
@@ -58,8 +59,14 @@ def upload():
         yield
 
     from chirp.library.do_push_to_chirpradio import main_generator
-    for _ in main_generator(start_timestamp=time.time()):
+    # We have to use the timestamp from the beginning of today because otherwise
+    # we won't get anything back.
+    today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
+    timestamp = time.mktime(today.timetuple())
+    for _ in main_generator(start_timestamp=timestamp):
         yield
+
+    cprint('Finished!', type='success')
 
 
 # def fake_command():
