@@ -26,16 +26,17 @@ ws.onmessage = (evt) => {
     case 'success':
       announce('success', obj.value)
       enableButton('button.next', true)
+      resetButtons()
       break
     case 'failure':
       announce('failure', obj.value)
       enableButton('button.show-errors', true)
+      resetButtons()
       $('.modal-body pre').text(obj.stacktrace || obj.value)
       break
     case 'stop':
     case 'finish':
-      enableButton('button.start', true)
-      enableButton('button.stop', false)
+      resetButtons()
       if (obj.type === 'stop') {
         plog('Command was stopped by user', 'highlight')
       }
@@ -64,6 +65,12 @@ $('button.stop').on('click', () => {
 $('button.next').on('click', function(evt) {
   document.location = $(this).data('url')
 })
+
+
+function resetButtons() {
+  enableButton('button.start', true)
+  enableButton('button.stop', false)
+}
 
 
 function enableButton(selector, enabled) {
