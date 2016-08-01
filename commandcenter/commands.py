@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import os.path as op
+import time
 
 from chirp.common.printing import cprint
 
@@ -52,16 +53,22 @@ def generate_traktor():
 
 
 def upload():
-    for _ in fake_command(): yield
-
-
-def fake_command():
-    import time
-    for i in range(1, 11):
-        cprint('Line #%d' % i)
-        time.sleep(0.2)
+    from chirp.library.do_push_artists_to_chirpradio import main_generator
+    for _ in main_generator():
         yield
-    cprint('Success!', type='success')
+
+    from chirp.library.do_push_to_chirpradio import main_generator
+    for _ in main_generator(start_timestamp=time.time()):
+        yield
+
+
+# def fake_command():
+#     import time
+#     for i in range(1, 11):
+#         cprint('Line #%d' % i)
+#         time.sleep(0.2)
+#         yield
+#     cprint('Success!', type='success')
 
 
 def exec_and_print(cmd, cwd):
