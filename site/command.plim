@@ -27,6 +27,7 @@ header
   h1 = self.page_title()
 
   -block desc
+  -block extra_ui
 
   .hbox
     = button('start', 'Start', not task_is_running)

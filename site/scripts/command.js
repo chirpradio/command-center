@@ -43,6 +43,7 @@ ws.onmessage = (evt) => {
     default:
       break
   }
+  $(document).trigger('webSocketMessage', [obj])
 }
 
 $('button.start').on('click', () => {

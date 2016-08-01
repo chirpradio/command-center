@@ -46,7 +46,9 @@ def import_music():
 
 
 def generate_traktor():
-    for _ in fake_command(): yield
+    from chirp.library.do_generate_collection_nml import main_generator
+    for _ in main_generator():
+        yield
 
 
 def upload():
