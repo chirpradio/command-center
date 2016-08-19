@@ -34,7 +34,7 @@ executor = ThreadPoolExecutor(1)
 app = None
 
 
-def serve():
+def get_app(**settings):
     global app
 
     handlers = [(r'/', IndexHandler)]
@@ -48,12 +48,8 @@ def serve():
     handlers.append(
         (r'/(.*)', NoCacheStaticFileHandler, {'path': str(site_path)}))
 
-    settings = dict(debug=True)
     app = CommandCenterApplication(handlers, **settings)
-    app.listen(8000)
-    print('Serving on http://localhost:8000')
-    loop = IOLoop.current()
-    loop.start()
+    return app
 
 
 class CommandCenterApplication(Application):

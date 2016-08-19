@@ -1,1 +1,1 @@
-from .app import serve
+from .app import get_app
