@@ -1,4 +1,5 @@
 futures
+nose
 pathlib2
 plim
 tornado

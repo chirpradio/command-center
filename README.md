@@ -2,7 +2,7 @@
 
 Web interface for running commands in [chirpradio-machine](https://github.com/chirpradio/chirpradio-machine/).
 
-# Installation
+## Installation
 
 ```
 mkvirtualenv chirp
@@ -15,7 +15,7 @@ Now change to the directory where chirpradio-machine was cloned, and run
 python setup.py develop
 ```
 
-# Running
+## Running
 
 Inside the command-center directory, run
 
@@ -24,3 +24,9 @@ python main.py
 ```
 
 Then open [localhost:8000](http://localhost:8000) in your browser.
+
+## Testing
+
+```
+nosetests -v
+```
