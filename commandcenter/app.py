@@ -115,9 +115,9 @@ class StartCommandHandler(RequestHandler):
 
         task_func = get_task_func(self.slug, self.func)
         task = CommandTask(self.slug, task_func)
-        task.start()
         app.current_task = task
 
+        # Add callbacks.
         def on_done(finished):
             app.current_task = None
             app.write_message(self.slug, type='finish' if finished else 'stop')
@@ -130,6 +130,7 @@ class StartCommandHandler(RequestHandler):
                 self.slug, str(ex), type='failure', stacktrace=traceback.format_exc())
         task.add_error_callback(on_error)
 
+        task.start()
         self.write('ok')
 
 
