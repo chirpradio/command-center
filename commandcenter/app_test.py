@@ -1,4 +1,5 @@
 import time
+import json
 
 from mock import patch
 from tornado import gen
@@ -37,15 +38,16 @@ class TestPages(AsyncHTTPTestCase):
             body)
 
 
-class TestTasks(AsyncHTTPTestCase):
+class TestCommands(AsyncHTTPTestCase):
     @patch.object(app, 'COMMAND_PAGES')
     def get_app(self, command_pages):
         # Fake command function that runs for 0.5 seconds.
         def new_artists():
+            time.sleep(0.25)
+            yield
+            time.sleep(0.25)
             yield
             cprint('123 new artists found')
-            time.sleep(0.5)
-            yield
 
         command_pages.__iter__.return_value = [
             ('new-artists', new_artists),
@@ -66,13 +68,33 @@ class TestTasks(AsyncHTTPTestCase):
         self.assertEqual(response.code, 200)
         self.assertEqual(response.body, b'ok')
 
-        # Check the message from the command.
-        msg = yield conn.read_message()
-        self.assertEqual(msg, '{"type": "info", "value": "123 new artists found"}')
-
         # Check that command is still running.
         self.assertIsNotNone(self.current_app.current_task)
+
+        # Check the message from the command.
+        msg = yield conn.read_message()
+        obj = json.loads(msg)
+        self.assertEqual(obj['value'], '123 new artists found')
+
+        # Check that command has stopped.
         yield gen.sleep(0.5)
+        self.assertIsNone(self.current_app.current_task)
+
+    @gen_test
+    def test_stop_command(self):
+        self.assertIsNone(self.current_app.current_task)
+
+        # Start the command.
+        self.http_client.fetch(self.get_url('/new-artists/start/'))
+
+        # Check that command was started.
+        yield gen.sleep(0.01)
+        self.assertIsNotNone(self.current_app.current_task)
+
+        # Stop the command.
+        response = yield self.http_client.fetch(self.get_url('/new-artists/stop/'))
+        self.assertEqual(response.code, 200)
+        self.assertEqual(response.body, b'ok')
 
         # Check that command has stopped.
         self.assertIsNone(self.current_app.current_task)
