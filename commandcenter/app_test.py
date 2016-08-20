@@ -61,6 +61,7 @@ class TestCommands(AsyncHTTPTestCase):
         url = 'ws://localhost:%s/new-artists/messages/' % self.get_http_port()
         conn = yield websocket_connect(url)
 
+        # Check that command is not running.
         self.assertIsNone(self.current_app.current_task)
 
         # Start the command.
@@ -71,10 +72,14 @@ class TestCommands(AsyncHTTPTestCase):
         # Check that command is still running.
         self.assertIsNotNone(self.current_app.current_task)
 
-        # Check the message from the command.
+        # Check the messages from the command.
         msg = yield conn.read_message()
         obj = json.loads(msg)
         self.assertEqual(obj['value'], '123 new artists found')
+
+        msg = yield conn.read_message()
+        obj = json.loads(msg)
+        self.assertEqual(obj, {'type': 'finish'})
 
         # Check that command has stopped.
         yield gen.sleep(0.5)
@@ -82,19 +87,63 @@ class TestCommands(AsyncHTTPTestCase):
 
     @gen_test
     def test_stop_command(self):
+        # Connect to websocket.
+        url = 'ws://localhost:%s/new-artists/messages/' % self.get_http_port()
+        conn = yield websocket_connect(url)
+
+        # Check that command is not running.
         self.assertIsNone(self.current_app.current_task)
 
         # Start the command.
-        self.http_client.fetch(self.get_url('/new-artists/start/'))
+        yield self.http_client.fetch(self.get_url('/new-artists/start/'))
 
         # Check that command was started.
-        yield gen.sleep(0.01)
         self.assertIsNotNone(self.current_app.current_task)
 
         # Stop the command.
         response = yield self.http_client.fetch(self.get_url('/new-artists/stop/'))
         self.assertEqual(response.code, 200)
         self.assertEqual(response.body, b'ok')
+
+        # Check the message from the command.
+        msg = yield conn.read_message()
+        obj = json.loads(msg)
+        self.assertEqual(obj, {'type': 'stop'})
+
+        # Check that command has stopped.
+        self.assertIsNone(self.current_app.current_task)
+
+
+class TestErrorInCommand(AsyncHTTPTestCase):
+    @patch.object(app, 'COMMAND_PAGES')
+    def get_app(self, command_pages):
+        # Fake command function that raises an exception.
+        def new_artists():
+            yield
+            raise Exception('Something crazy happened!')
+            yield
+
+        command_pages.__iter__.return_value = [
+            ('new-artists', new_artists),
+        ]
+        self.current_app = app.get_app()
+        return self.current_app
+
+    @gen_test
+    def test_error_in_command(self):
+        # Connect to websocket.
+        url = 'ws://localhost:%s/new-artists/messages/' % self.get_http_port()
+        conn = yield websocket_connect(url)
+
+        # Start the command.
+        self.http_client.fetch(self.get_url('/new-artists/start/'))
+
+        # Check the message from the command.
+        msg = yield conn.read_message()
+        obj = json.loads(msg)
+        self.assertEqual(obj['value'], 'Something crazy happened!')
+        self.assertEqual(obj['type'], 'failure')
+        self.assertIn('Traceback (most recent call last)', obj['stacktrace'])
 
         # Check that command has stopped.
         self.assertIsNone(self.current_app.current_task)
