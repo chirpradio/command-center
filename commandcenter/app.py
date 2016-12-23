@@ -21,6 +21,7 @@ COMMAND_PAGES = [
     # (slug, function)
     ('new-artists', commands.new_artists),
     ('update-artist-whitelist', commands.update_artist_whitelist),
+    ('push-artist-whitelist', commands.push_artist_whitelist),
     ('check-music', commands.check_music),
     ('import-music', commands.import_music),
     ('generate-traktor', commands.generate_traktor),
@@ -109,11 +110,16 @@ class StartCommandHandler(RequestHandler):
         self.func = func
 
     def get(self):
+        # Convert query arguments to dict of strings (instead of dict of lists).
+        func_kwargs = dict(
+            (k, v[0]) for k, v
+            in self.request.query_arguments.items())
+
         if app.current_task is not None:
             self.write('fail: command is still running')
             return
 
-        task_func = get_task_func(self.slug, self.func)
+        task_func = get_task_func(self.slug, self.func, func_kwargs)
         task = CommandTask(self.slug, task_func)
         app.current_task = task
 
@@ -234,7 +240,7 @@ def render(template_name, **kwargs):
     return tmpl.render(**kwargs)
 
 
-def get_task_func(slug, func):
+def get_task_func(slug, func, kwargs):
     from chirp.common.printing import cprint
 
     def write_func(message, **kwargs):
@@ -243,7 +249,7 @@ def get_task_func(slug, func):
 
     def new_func():
         with cprint.use_write_function(write_func):
-            for obj in func():
+            for obj in func(**kwargs):
                 yield obj
 
     return new_func
