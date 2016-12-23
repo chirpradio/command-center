@@ -70,6 +70,7 @@ def upload(date):
 
     # Parse the date string we got from the client.
     dt = datetime.datetime.strptime(date, '%m/%d/%Y')
+    cprint('Uploading track changes made since: {:%m/%d/%Y %H:%M}'.format(dt))
     timestamp = time.mktime(dt.timetuple())
     for _ in main_generator(start_timestamp=timestamp):
         yield

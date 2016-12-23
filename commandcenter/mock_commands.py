@@ -53,10 +53,12 @@ def upload(date):
     yield
     cprint('Date: {}'.format(date))
     dt = datetime.datetime.strptime(date, '%m/%d/%Y')
-    timestamp = time.mktime(dt.timetuple())
-    cprint('Using timestamp: {}'.format(timestamp))
 
     cprint('Pushing artists metadata...')
+
+    cprint('Uploading track changes made since: {:%m/%d/%Y %H:%M}'.format(dt))
+    timestamp = time.mktime(dt.timetuple())
+    cprint('Using timestamp: {}'.format(timestamp))
 
     cprint('Pushing track metadata...')
 
