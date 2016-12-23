@@ -10,7 +10,7 @@ Web interface for running commands in [chirpradio-machine](https://github.com/ch
 ## Installation
 
 ```
-mkvirtualenv chirp
+mkvirtualenv chirpradio
 pip install -r requirements.txt
 ```
 

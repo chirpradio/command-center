@@ -48,7 +48,13 @@ ws.onmessage = (evt) => {
 }
 
 $('button.start').on('click', () => {
-  $.get('start/', (data) => {
+  let url = 'start/'
+  let queryString = $('form').serialize()
+  if (queryString !== '') {
+    url += '?' + queryString
+  }
+
+  $.get(url, (data) => {
     if (data === 'ok') {
       enableButton('button.start', false)
       enableButton('button.stop', true)

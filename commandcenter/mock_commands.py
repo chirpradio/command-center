@@ -1,6 +1,17 @@
 import time
+import datetime
 
 from chirp.common.printing import cprint
+
+
+def fake_command(fn):
+    """
+    Decorator that can be used to easily replace a real command function with
+    its mock equivalent. Useful during manual testing.
+
+    """
+    mock_func = globals()[fn.__name__]
+    return mock_func
 
 
 def new_artists():
@@ -36,4 +47,19 @@ def check_music():
 
 
 generate_traktor = new_artists
-upload = new_artists
+
+
+def upload(date):
+    yield
+    cprint('Date: {}'.format(date))
+    dt = datetime.datetime.strptime(date, '%m/%d/%Y')
+
+    cprint('Pushing artists metadata...')
+
+    cprint('Uploading track changes made since: {:%m/%d/%Y %H:%M}'.format(dt))
+    timestamp = time.mktime(dt.timetuple())
+    cprint('Using timestamp: {}'.format(timestamp))
+
+    cprint('Pushing track metadata...')
+
+    cprint('Done!', type='success')

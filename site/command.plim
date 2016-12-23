@@ -1,6 +1,6 @@
 -inherit base.plim
 
--block extrahead
+-block extrastyle
   link rel='stylesheet' href='/styles/command.css'
 
 -block extrascripts
