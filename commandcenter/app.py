@@ -1,3 +1,4 @@
+import os
 import functools
 import threading
 import json
@@ -13,8 +14,10 @@ from tornado.web import Application, RequestHandler, StaticFileHandler
 from tornado.websocket import WebSocketHandler
 from tornado import gen
 
-# from . import mock_commands as commands
-from . import commands
+if os.environ.get('MOCK'):
+    from . import mock_commands as commands
+else:
+    from . import commands
 
 
 COMMAND_PAGES = [

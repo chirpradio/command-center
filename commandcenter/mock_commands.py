@@ -34,6 +34,16 @@ def update_artist_whitelist():
     cprint('Added 30 new artists!', type='success')
 
 
+def import_music():
+    cprint('Finished!', type='success')
+    yield
+
+
+def push_artist_whitelist():
+    cprint('Simulated pushing artist whitelist to git', type='success')
+    yield
+
+
 def check_music():
     for i in range(1, 13):
         kwargs = {}
