@@ -9,18 +9,16 @@ Web interface for running commands in [chirpradio-machine](https://github.com/ch
 
 ## Installation
 
+You may wish to [create a virtualenv](https://virtualenv.pypa.io/en/stable/) first.
+Install all dependencies like this:
+
 ```
-mkvirtualenv chirp
 pip install -r requirements.txt
 ```
 
-Now change to the directory where chirpradio-machine was cloned, and run
-
-```
-python setup.py develop
-```
-
-Make sure to follow the instructions in the [Installation section of the chirpradio-machine README](https://github.com/chirpradio/chirpradio-machine/#installation).
+Make sure to follow the instructions in the
+[Installation section of the chirpradio-machine README](https://github.com/chirpradio/chirpradio-machine/#installation)
+so that you install the `chirp` module within the same virtualenv you used for `command-center`.
 
 
 ## Running
