@@ -36,7 +36,7 @@ def push_artist_whitelist():
     cmd = ['git', 'commit', artists._WHITELIST_FILE, '-m', 'Adding new artists']
     exec_and_print(cmd, cwd)
     cmd = ['git', 'push']
-    # exec_and_print(cmd, cwd)
+    exec_and_print(cmd, cwd)
     cprint('Changes to artist whitelist pushed to git', type='success')
 
     yield   # to make this function a generator function
