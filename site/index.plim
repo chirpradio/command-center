@@ -18,6 +18,7 @@ p Welcome! What would you like to do?
 .well style='max-width:500px'
   = button('See new artists', '/new-artists/')
   = button('Update artist whitelist', '/update-artist-whitelist/')
+  = button('Push artist whitelist', '/push-artist-whitelist/')
   = button('Check new music files', '/check-music/')
   = button('Import new music files', '/import-music/')
   = button('Generate Traktor file', '/generate-traktor/')

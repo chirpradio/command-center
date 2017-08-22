@@ -31,6 +31,16 @@ python main.py
 
 Then open [localhost:8000](http://localhost:8000) in your browser.
 
+If you want to use mock commands instead of real commands, start the
+app like this:
+
+````
+MOCK=1 python main.py
+````
+
+This may be useful for testing the web UI. The definitions for these
+commands live in `commandcenter.mock_commands`.
+
 ## Testing
 
 ```

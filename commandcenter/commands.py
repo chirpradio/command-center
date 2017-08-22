@@ -6,6 +6,8 @@ import datetime
 
 from chirp.common.printing import cprint
 
+from mock_commands import fake_command
+
 
 def new_artists():
     from chirp.library.do_dump_new_artists_in_dropbox import main_generator
@@ -19,19 +21,25 @@ def update_artist_whitelist():
     for _ in main_generator(rewrite=True):
         yield
 
-    cwd = op.dirname(artists._WHITELIST_FILE)
-
     # Show changes to the artist whitelist file
+    cprint('Changes made to artist whitelist:')
+    cwd = op.dirname(artists._WHITELIST_FILE)
     cmd = ['git', 'diff', artists._WHITELIST_FILE]
     exec_and_print(cmd, cwd)
+
+
+def push_artist_whitelist():
+    from chirp.library import artists
+    cwd = op.dirname(artists._WHITELIST_FILE)
 
     # Commit and push.
     cmd = ['git', 'commit', artists._WHITELIST_FILE, '-m', 'Adding new artists']
     exec_and_print(cmd, cwd)
-    # cmd = ['git', 'push']
-    # exec_and_print(cmd, cwd)
-
+    cmd = ['git', 'push']
+    exec_and_print(cmd, cwd)
     cprint('Changes to artist whitelist pushed to git', type='success')
+
+    yield   # to make this function a generator function
 
 
 def check_music():
@@ -53,29 +61,21 @@ def generate_traktor():
         yield
 
 
-def upload():
+def upload(date):
     from chirp.library.do_push_artists_to_chirpradio import main_generator
     for _ in main_generator():
         yield
 
     from chirp.library.do_push_to_chirpradio import main_generator
-    # We have to use the timestamp from the beginning of today because otherwise
-    # we won't get anything back.
-    today = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
-    timestamp = time.mktime(today.timetuple())
+
+    # Parse the date string we got from the client.
+    dt = datetime.datetime.strptime(date, '%m/%d/%Y')
+    cprint('Uploading track changes made since: {:%m/%d/%Y %H:%M}'.format(dt))
+    timestamp = time.mktime(dt.timetuple())
     for _ in main_generator(start_timestamp=timestamp):
         yield
 
     cprint('Finished!', type='success')
-
-
-# def fake_command():
-#     import time
-#     for i in range(1, 11):
-#         cprint('Line #%d' % i)
-#         time.sleep(0.2)
-#         yield
-#     cprint('Success!', type='success')
 
 
 def exec_and_print(cmd, cwd):
