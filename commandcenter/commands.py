@@ -18,12 +18,19 @@ def new_artists():
 def update_artist_whitelist():
     from chirp.library import artists
     from chirp.library.do_dump_new_artists_in_dropbox import main_generator
+    cwd = op.dirname(artists._WHITELIST_FILE)
+
+    # Make sure the comitted version of the whitelist is checked out.
+    # This allows operators to fix mistakes by editing mp3 tags
+    # and continuously re-running this task.
+    cmd = ['git', 'checkout', artists._WHITELIST_FILE]
+    exec_and_print(cmd, cwd)
+
     for _ in main_generator(rewrite=True):
         yield
 
     # Show changes to the artist whitelist file
     cprint('Changes made to artist whitelist:')
-    cwd = op.dirname(artists._WHITELIST_FILE)
     cmd = ['git', 'diff', artists._WHITELIST_FILE]
     exec_and_print(cmd, cwd)
     # This will load the new artist whitelist file
