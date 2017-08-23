@@ -26,6 +26,9 @@ def update_artist_whitelist():
     cwd = op.dirname(artists._WHITELIST_FILE)
     cmd = ['git', 'diff', artists._WHITELIST_FILE]
     exec_and_print(cmd, cwd)
+    # This will load the new artist whitelist file
+    # into python memory.
+    artists._init()
 
 
 def push_artist_whitelist():
