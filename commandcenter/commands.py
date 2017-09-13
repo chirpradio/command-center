@@ -26,6 +26,10 @@ def update_artist_whitelist():
     cmd = ['git', 'checkout', artists._WHITELIST_FILE]
     exec_and_print(cmd, cwd)
 
+    # This will reload the artist whitelist file
+    # in python memory.
+    artists._init()
+
     for _ in main_generator(rewrite=True):
         yield
 
@@ -33,8 +37,9 @@ def update_artist_whitelist():
     cprint('Changes made to artist whitelist:')
     cmd = ['git', 'diff', artists._WHITELIST_FILE]
     exec_and_print(cmd, cwd)
-    # This will load the new artist whitelist file
-    # into python memory.
+
+    # Once again, this reloads the artist whitelist file
+    # in python memory.
     artists._init()
 
 
